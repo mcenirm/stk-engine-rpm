@@ -1,18 +1,12 @@
 FROM registry.access.redhat.com/ubi9/ubi:9.1.0
-# ARG lsbrpm
+
 ARG stkenginerpm
 ARG stkenginedatarpm
 ARG rpmctxpath
-# COPY ${rpmctxpath}${lsbrpm} /tmp/
+
 COPY ${rpmctxpath}${stkenginerpm} /tmp/
 COPY ${rpmctxpath}${stkenginedatarpm} /tmp/
-# RUN set -x && dnf -q -y install \
-#     /tmp/${lsbrpm} \
-#     /tmp/${stkenginerpm} \
-#  && dnf clean all \
-#  && rm -f \
-#     /tmp/${lsbrpm} \
-#     /tmp/${stkenginerpm}
+
 RUN set -x && dnf -q -y install \
     /tmp/${stkenginerpm} \
     /tmp/${stkenginedatarpm} \
