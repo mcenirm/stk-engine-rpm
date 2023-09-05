@@ -19,8 +19,8 @@
 2. Review RPMs
 
    ```shell
-   rpm -qp builtrpms/x86_64/stk-engine-12.7.0-1.el9.x86_64.rpm -lv
-   rpm -qp builtrpms/x86_64/stk-engine-data-12.7.0-1.el9.x86_64.rpm -lv
+   rpm -qp builtrpms/x86_64/stk-engine-12.7.0-2.el9.x86_64.rpm -lv
+   rpm -qp builtrpms/x86_64/stk-engine-data-12.7.0-2.el9.x86_64.rpm -lv
    ```
 
 

@@ -7,7 +7,7 @@
 
 Name:           stk-engine
 Version:        12.7.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Ansys STK Engine for Linux
 
 License:        Proprietary
@@ -75,50 +75,6 @@ tar tf %{SOURCE1} \
 
 
 %install
-
-mkdir %{buildroot}%{_sysconfdir}
-mkdir %{buildroot}%{_sysconfdir}/ld.so.conf.d
-echo /usr/ansys_inc/bin > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
-
-mkdir %{buildroot}%{_sysconfdir}/profile.d
-echo > %{buildroot}%{_sysconfdir}/profile.d/%{name}.csh <<'EOF'
-if ( ${euid} > 0 ) then
-  if ( ${?STK_INSTALL_DIR} ) then
-    if ( "$STK_INSTALL_DIR" != "" ) then
-      goto skip_stk_install_dir
-    endif
-  endif
-  setenv STK_INSTALL_DIR /usr/ansys_inc
-  skip_stk_install_dir:
-
-  switch (":${PATH}:")
-    case "*:${STK_INSTALL_DIR}/bin:*":
-      breaksw
-    default:
-      set path = ( ${path:q} ${STK_INSTALL_DIR:q}/bin )
-      breaksw
-  endsw
-
-  if ( $?STK_CONFIG_DIR ) then
-    if ( "$STK_CONFIG_DIR" != "" ) then
-      goto skip_stk_config_dir
-    endif
-  endif
-  setenv STK_CONFIG_DIR ~/Documents
-  skip_stk_config_dir:
-endif
-EOF
-echo > %{buildroot}%{_sysconfdir}/profile.d/%{name}.sh <<'EOF'
-if [ "${EUID:-0}" != "0" ]; then
-  [ -n "${STK_INSTALL_DIR:-}" ] || export STK_INSTALL_DIR=/usr/ansys_inc
-  case ":$PATH:" in
-    *:$STK_INSTALL_DIR/bin:*) ;;
-    *) PATH=$PATH:$STK_INSTALL_DIR/bin ;;
-  esac
-  [ -n "${STK_CONFIG_DIR:-}" ] || export STK_CONFIG_DIR=$HOME/Documents
-fi
-EOF
-
 mkdir %{buildroot}/usr
 mkdir %{buildroot}/usr/ansys_inc
 ln -sT usr/ansys_inc %{buildroot}/ansys_inc
@@ -126,6 +82,8 @@ ln -sT usr/ansys_inc %{buildroot}/ansys_inc
 tar xf %{SOURCE0} \
     --strip-components=1 \
     -C %{buildroot}/usr/ansys_inc
+
+# these exclusions must match the ones above for ...-data.files.lst
 tar xf %{SOURCE1} \
     '--exclude=*/Data/ExampleScenarios/*' \
     '--exclude=*/Data/HtmlInterface/*' \
@@ -138,15 +96,29 @@ tar xf %{SOURCE1} \
     --strip-components=1 \
     -C %{buildroot}/usr/ansys_inc
 
+mkdir -p %{buildroot}%{_bindir}
+for c in connect connectconsole stkxnewuser
+do
+  printf '
+      #!/usr/bin/bash
+      export STK_INSTALL_DIR=${STK_INSTALL_DIR:-/usr/ansys_inc}
+      export LD_LIBRARY_PATH=$STK_INSTALL_DIR/bin${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+      export STK_CONFIG_DIR=${STK_CONFIG_DIR:-$HOME/Documents}
+      export ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE:-1055@localhost}
+      exec -- "$STK_INSTALL_DIR/bin/%s" "$@"
+      ' $c | sed -e 's/^      //' -e '/^$/d' > %{buildroot}%{_bindir}/$c
+  chmod +x %{buildroot}%{_bindir}/$c
+done
+
 # ignore rpath quirks (invalid, empty, "..")
 export QA_RPATHS=0x0032
 
 
 %files -f %{_builddir}/%{name}.files.lst
 /ansys_inc
-%{_sysconfdir}/ld.so.conf.d/%{name}.conf
-%{_sysconfdir}/profile.d/%{name}.csh
-%{_sysconfdir}/profile.d/%{name}.sh
+%{_bindir}/connect
+%{_bindir}/connectconsole
+%{_bindir}/stkxnewuser
 
 %files data -f %{_builddir}/%{name}-data.files.lst
 

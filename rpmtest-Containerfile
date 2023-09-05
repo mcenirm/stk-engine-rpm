@@ -15,10 +15,7 @@ RUN set -x && dnf -q -y install \
     /tmp/${stkenginerpm} \
     /tmp/${stkenginedatarpm}
 
-ENV STK_INSTALL_DIR /usr/ansys_inc
-
 RUN useradd tester
 USER tester
-ENV STK_CONFIG_DIR /home/tester/Documents
-RUN /usr/ansys_inc/bin/stkxnewuser --allowOnline=no
-CMD [ "/usr/ansys_inc/bin/connectconsole", "--new", "--nographics", "--interactive" ]
+RUN stkxnewuser --allowOnline=no
+CMD [ "connectconsole", "--new", "--nographics", "--interactive" ]
