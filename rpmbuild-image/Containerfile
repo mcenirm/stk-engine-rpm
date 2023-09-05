@@ -1,0 +1,26 @@
+FROM registry.access.redhat.com/ubi9/ubi:9.1.0
+
+# Keep dnf metadata in image build cache
+RUN dnf makecache
+
+# Install rpmbuild
+RUN dnf install -q -y \
+    rpm-build-4.16.1.3-22.el9.x86_64 \
+    rpmdevtools-9.5-1.el9.noarch \
+    rpmlint-1.11-19.el9.noarch \
+ && dnf clean all
+
+RUN rpmdev-setuptree \
+ && mkdir /root/rpmbuild/BUILDROOT
+
+VOLUME [ "/root/rpmbuild/BUILD" ]
+VOLUME [ "/root/rpmbuild/BUILDROOT" ]
+VOLUME [ "/root/rpmbuild/RPMS" ]
+VOLUME [ "/root/rpmbuild/SOURCES" ]
+VOLUME [ "/root/rpmbuild/SPECS" ]
+VOLUME [ "/root/rpmbuild/SRPMS" ]
+
+COPY buildspecs.bash /buildspecs.bash
+RUN chmod +x /buildspecs.bash
+
+CMD [ "bash", "/buildspecs.bash" ]

@@ -1,0 +1,10 @@
+services:
+  rpmtest:
+    build:
+      context: builtrpms
+      dockerfile: ../rpmtest-Containerfile
+      args:
+        # lsbrpm: bogus-lsb-core-4.1-2.el9.x86_64.rpm
+        stkenginerpm: stk-engine-12.7.0-1.el9.x86_64.rpm
+        stkenginedatarpm: stk-engine-data-12.7.0-1.el9.x86_64.rpm
+        rpmctxpath: x86_64/

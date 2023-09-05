@@ -1,0 +1,15 @@
+services:
+  rpmbuild:
+    build:
+      context: rpmbuild-image
+    volumes:
+      - build:/root/rpmbuild/BUILD:rw,Z
+      - buildroot:/root/rpmbuild/BUILDROOT:rw,Z
+      - ./rpminputs:/root/rpmbuild/SPECS:ro,Z
+      - ./rpminputs:/root/rpmbuild/SOURCES:ro,Z
+      - ./builtrpms:/root/rpmbuild/RPMS:rw,Z
+      - ./builtrpms:/root/rpmbuild/SRPMS:rw,Z
+
+volumes:
+  build:
+  buildroot:
